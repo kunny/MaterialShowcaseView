@@ -197,8 +197,9 @@ public class MaterialShowcaseView extends FrameLayout implements View.OnTouchLis
             mPrefsManager.resetShowcase();
         }
 
-
-        notifyOnDismissed();
+        if (mWasDismissed) {
+            notifyOnDismissed();
+        }
 
     }
 
