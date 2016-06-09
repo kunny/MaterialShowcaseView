@@ -146,8 +146,8 @@ public class MaterialShowcaseView extends FrameLayout implements View.OnTouchLis
         final int width = getMeasuredWidth();
         final int height = getMeasuredHeight();
 
-		// don't bother drawing if there is nothing to draw on
-		if(width <= 0 || height <= 0) return;
+        // don't bother drawing if there is nothing to draw on
+        if(width <= 0 || height <= 0) return;
 
         // build a new canvas if needed i.e first pass or new dimensions
         if (mBitmap == null || mCanvas == null || mOldHeight != height || mOldWidth != width) {
@@ -218,12 +218,11 @@ public class MaterialShowcaseView extends FrameLayout implements View.OnTouchLis
 
 
     private void notifyOnDisplayed() {
-
-		if(mListeners != null){
-			for (IShowcaseListener listener : mListeners) {
-				listener.onShowcaseDisplayed(this);
-			}
-		}
+        if(mListeners != null) {
+            for (IShowcaseListener listener : mListeners) {
+                listener.onShowcaseDisplayed(this);
+            }
+        }
     }
 
     private void notifyOnDismissed() {
@@ -263,6 +262,15 @@ public class MaterialShowcaseView extends FrameLayout implements View.OnTouchLis
      */
     public void setTarget(Target target) {
         mTarget = target;
+
+        // don't show if target view is out of the screen
+        // ex: target view is located at another page in viewpager
+        if (!isInsideOfCurrentScreenBound(target.getPoint().x, target.getPoint().y)) {
+            setShouldRender(false);
+            setVisibility(View.GONE);
+        } else {
+            setShouldRender(true);
+        }
 
         // update dismiss button state
         updateDismissButton();
@@ -403,7 +411,9 @@ public class MaterialShowcaseView extends FrameLayout implements View.OnTouchLis
     }
 
     private void setShouldRender(boolean shouldRender) {
-        mShouldRender = shouldRender;
+        if (mShouldRender != shouldRender) {
+            mShouldRender = shouldRender;
+        }
     }
 
     private void setMaskColour(int maskColour) {
@@ -472,6 +482,12 @@ public class MaterialShowcaseView extends FrameLayout implements View.OnTouchLis
                 mDismissButton.setVisibility(VISIBLE);
             }
         }
+    }
+
+    private boolean isInsideOfCurrentScreenBound(int targetX, int targetY) {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        return targetX > 0 && targetX < dm.widthPixels
+                && targetY > 0 && targetY < dm.heightPixels;
     }
 
     public boolean hasFired() {
@@ -745,8 +761,6 @@ public class MaterialShowcaseView extends FrameLayout implements View.OnTouchLis
         }
 
         ((ViewGroup) activity.getWindow().getDecorView()).addView(this);
-
-        setShouldRender(true);
 
         mHandler = new Handler();
         mHandler.postDelayed(new Runnable() {
